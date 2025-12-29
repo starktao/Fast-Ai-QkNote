@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Style Front</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <h1>Notebook-Style UI</h1>
+        <p>Warm gradient background, soft cards, and editorial typography.</p>
+      </header>
+
+      <section>
+        <div class="section-title">
+          <h2>Section Title</h2>
+          <span class="status">status message</span>
+        </div>
+        <div class="grid">
+          <label>
+            Field label
+            <input type="text" placeholder="Type here" />
+          </label>
+          <label>
+            Select label
+            <select>
+              <option>Option A</option>
+              <option>Option B</option>
+            </select>
+          </label>
+          <label>
+            Notes
+            <textarea placeholder="Write something"></textarea>
+          </label>
+        </div>
+        <button>Primary Action</button>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>Session Layout</h2>
+          <button>Refresh</button>
+        </div>
+        <div class="sessions">
+          <div class="session-list">
+            <div class="session-item active">
+              <div><strong>#01</strong> Example item</div>
+              <div class="session-meta">
+                <span>completed / note</span>
+                <span>2025-01-01</span>
+              </div>
+            </div>
+            <div class="session-item">
+              <div><strong>#02</strong> Example item</div>
+              <div class="session-meta">
+                <span>running / transcribe</span>
+                <span>2025-01-02</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="session-detail">
+            <div class="step">
+              <span>download</span>
+              <span class="badge">completed</span>
+            </div>
+            <div class="step">
+              <span>transcribe</span>
+              <span class="badge">running</span>
+            </div>
+            <div class="note-block">
+              This panel is for detailed content or results.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
