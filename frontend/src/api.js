@@ -36,3 +36,9 @@ export function listSessions() {
 export function getSession(sessionId) {
   return fetchJson(`/api/sessions/${sessionId}`);
 }
+
+export function deleteSession(sessionId) {
+  return fetchJson(`/api/sessions/${sessionId}`, {
+    method: "DELETE",
+  });
+}

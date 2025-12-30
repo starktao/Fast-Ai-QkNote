@@ -104,7 +104,11 @@ def download_audio(session_id: int, url: str) -> str:
         ],
     }
     with YoutubeDL(ydl_opts) as ydl:
-        ydl.extract_info(url, download=True)
+        info = ydl.extract_info(url, download=True)
+    if isinstance(info, dict):
+        title = info.get("title")
+        if title:
+            db.update_session(session_id, title=title)
 
     candidates = sorted(Path(AUDIO_DIR).glob(f"{session_id}.*"), key=os.path.getmtime, reverse=True)
     if not candidates:

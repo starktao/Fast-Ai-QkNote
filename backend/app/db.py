@@ -35,6 +35,7 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 url TEXT NOT NULL,
+                title TEXT,
                 style TEXT,
                 remark TEXT,
                 status TEXT NOT NULL,
@@ -58,6 +59,9 @@ def init_db() -> None:
             );
             """
         )
+        columns = [row["name"] for row in conn.execute("PRAGMA table_info(sessions)").fetchall()]
+        if "title" not in columns:
+            conn.execute("ALTER TABLE sessions ADD COLUMN title TEXT")
 
 
 def get_config() -> dict | None:
@@ -90,10 +94,10 @@ def create_session(url: str, style: str | None, remark: str | None) -> int:
     with _get_conn() as conn:
         cur = conn.execute(
             """
-            INSERT INTO sessions (url, style, remark, status, stage, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO sessions (url, title, style, remark, status, stage, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (url, style, remark, "pending", "download", now, now),
+            (url, None, style, remark, "pending", "download", now, now),
         )
         session_id = int(cur.lastrowid)
         steps = [
@@ -115,7 +119,7 @@ def list_sessions() -> list[dict]:
     with _get_conn() as conn:
         rows = conn.execute(
             """
-            SELECT id, url, style, remark, status, stage, created_at, updated_at
+            SELECT id, url, title, style, remark, status, stage, created_at, updated_at
             FROM sessions
             ORDER BY id DESC
             """
@@ -169,3 +173,8 @@ def update_step(session_id: int, step: str, status: str, message: str | None = N
             """,
             (status, message, now, session_id, step),
         )
+
+
+def delete_session(session_id: int) -> None:
+    with _get_conn() as conn:
+        conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))

@@ -7,3 +7,5 @@ __pycache__/
 .env
 tools/ffmpeg/
 tools/*.zip
+scripts/tools/ffmpeg/
+scripts/tools/*.zip

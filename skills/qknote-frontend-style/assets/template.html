@@ -1,0 +1,82 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QkNote Style Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main style="max-width: 760px; margin: 32px auto; padding: 0 16px;">
+      <section class="qk-card" style="margin-bottom: 20px;">
+        <div class="qk-section-title">
+          <h2>Section Title</h2>
+          <span class="qk-status">Status text</span>
+        </div>
+        <label class="qk-label" style="margin-bottom: 12px;">
+          Input
+          <input class="qk-input" type="text" placeholder="Placeholder" />
+        </label>
+        <label class="qk-label" style="margin-bottom: 12px;">
+          Select
+          <div class="qk-dropdown">
+            <button class="qk-dropdown-trigger" type="button">
+              <span>Option A</span>
+              <span>v</span>
+            </button>
+            <ul class="qk-dropdown-menu">
+              <li><button class="qk-dropdown-option active">Option A</button></li>
+              <li><button class="qk-dropdown-option">Option B</button></li>
+              <li><button class="qk-dropdown-option">Option C</button></li>
+            </ul>
+          </div>
+        </label>
+        <label class="qk-label" style="margin-bottom: 12px;">
+          Notes
+          <textarea class="qk-textarea" placeholder="Write something..."></textarea>
+        </label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="qk-button">Primary</button>
+          <button class="qk-button qk-ghost">Ghost</button>
+        </div>
+      </section>
+
+      <section class="qk-card" style="margin-bottom: 20px;">
+        <div class="qk-section-title">
+          <h2>Toggle Group</h2>
+        </div>
+        <div class="qk-toggle-group">
+          <button class="qk-toggle-btn active">Note</button>
+          <button class="qk-toggle-btn">Transcript</button>
+        </div>
+      </section>
+
+      <section class="qk-card" style="margin-bottom: 20px;">
+        <div class="qk-section-title">
+          <h2>Status Pills</h2>
+        </div>
+        <div class="qk-pill-group">
+          <div class="qk-pill is-running"><span class="qk-pill-label">Download</span></div>
+          <div class="qk-pill is-completed"><span class="qk-pill-label">Transcribe</span></div>
+          <div class="qk-pill is-pending"><span class="qk-pill-label">Note</span></div>
+          <div class="qk-pill is-failed"><span class="qk-pill-label">Failed</span></div>
+        </div>
+      </section>
+
+      <section class="qk-card">
+        <div class="qk-section-title">
+          <h2>Prose</h2>
+        </div>
+        <div class="qk-prose">
+          <h3>Heading</h3>
+          <p>This is a paragraph with <strong>bold</strong> and <em>emphasis</em>.</p>
+          <ul>
+            <li>Bullet one</li>
+            <li>Bullet two</li>
+          </ul>
+          <pre><code>const note = "QkNote";</code></pre>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

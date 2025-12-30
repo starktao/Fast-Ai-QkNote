@@ -1,4 +1,11 @@
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+import asyncio
+import json
+import os
+import shutil
+from pathlib import Path
+
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -81,6 +88,24 @@ def list_sessions() -> dict:
     return {"items": db.list_sessions()}
 
 
+@app.get("/api/sessions/stream")
+async def stream_sessions(request: Request) -> StreamingResponse:
+    async def event_generator():
+        last_payload = None
+        while True:
+            if await request.is_disconnected():
+                break
+            payload = {"items": db.list_sessions()}
+            data = json.dumps(payload, ensure_ascii=False)
+            if data != last_payload:
+                last_payload = data
+                yield f"event: sessions\ndata: {data}\n\n"
+            await asyncio.sleep(2)
+
+    headers = {"Cache-Control": "no-cache", "Connection": "keep-alive"}
+    return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)
+
+
 @app.get("/api/sessions/{session_id}")
 def get_session(session_id: int) -> dict:
     session = db.get_session(session_id)
@@ -88,3 +113,47 @@ def get_session(session_id: int) -> dict:
         raise HTTPException(status_code=404, detail="not found")
     steps = db.list_session_steps(session_id)
     return {"session": session, "steps": steps}
+
+
+@app.delete("/api/sessions/{session_id}")
+def delete_session(session_id: int) -> dict:
+    session = db.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="not found")
+    _delete_audio_assets(session_id)
+    db.delete_session(session_id)
+    return {"ok": True}
+
+
+def _delete_audio_assets(session_id: int) -> None:
+    audio_dir = Path(os.path.join(db.DATA_DIR, "audio"))
+    if not audio_dir.exists():
+        return
+    for path in audio_dir.glob(f"{session_id}.*"):
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+    chunk_dir = audio_dir / f"{session_id}_chunks"
+    if chunk_dir.exists():
+        shutil.rmtree(chunk_dir, ignore_errors=True)
+
+
+@app.get("/api/sessions/{session_id}/stream")
+async def stream_session(session_id: int, request: Request) -> StreamingResponse:
+    async def event_generator():
+        last_payload = None
+        while True:
+            if await request.is_disconnected():
+                break
+            session = db.get_session(session_id)
+            steps = db.list_session_steps(session_id) if session else []
+            payload = {"session": session, "steps": steps}
+            data = json.dumps(payload, ensure_ascii=False)
+            if data != last_payload:
+                last_payload = data
+                yield f"event: session\ndata: {data}\n\n"
+            await asyncio.sleep(2)
+
+    headers = {"Cache-Control": "no-cache", "Connection": "keep-alive"}
+    return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)

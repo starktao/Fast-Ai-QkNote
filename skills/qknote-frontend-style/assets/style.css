@@ -1,0 +1,365 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Spectral:wght@500;700&display=swap");
+
+:root {
+  color-scheme: light;
+  --bg: #f4f0ea;
+  --bg-accent: #efe5d4;
+  --card: #ffffff;
+  --text: #1f1c17;
+  --muted: #6f645a;
+  --accent: #1c6b5a;
+  --border: rgba(31, 28, 23, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top left, var(--bg-accent), transparent 60%),
+    linear-gradient(180deg, #faf7f2 0%, var(--bg) 100%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Spectral", serif;
+  margin: 0;
+}
+
+.qk-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(31, 28, 23, 0.06);
+}
+
+.qk-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.qk-status {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.qk-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.qk-input,
+.qk-select,
+.qk-textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.2s ease;
+}
+
+.qk-input:focus,
+.qk-select:focus,
+.qk-textarea:focus {
+  outline: none;
+  border-color: rgba(28, 107, 90, 0.45);
+  box-shadow: 0 0 0 3px rgba(28, 107, 90, 0.12);
+}
+
+.qk-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.qk-button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.qk-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.qk-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(28, 107, 90, 0.18);
+}
+
+.qk-button:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.qk-ghost {
+  background: #fffaf3;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.qk-toggle-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qk-toggle-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #f7f3ec;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.qk-toggle-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.qk-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.qk-dropdown-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s ease;
+}
+
+.qk-dropdown-trigger:hover {
+  border-color: rgba(28, 107, 90, 0.35);
+}
+
+.qk-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  list-style: none;
+  margin: 0;
+  z-index: 20;
+  box-shadow: 0 16px 24px rgba(31, 28, 23, 0.12);
+  max-height: 220px;
+  overflow: auto;
+}
+
+.qk-dropdown-option {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.qk-dropdown-option:hover {
+  background: rgba(28, 107, 90, 0.08);
+}
+
+.qk-dropdown-option.active {
+  background: rgba(28, 107, 90, 0.12);
+  color: var(--accent);
+}
+
+.qk-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.qk-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+  overflow: visible;
+}
+
+.qk-pill.is-pending {
+  border-color: rgba(31, 28, 23, 0.12);
+  color: var(--muted);
+}
+
+.qk-pill.is-completed {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.qk-pill.is-failed {
+  border-color: #d64a3a;
+  color: #d64a3a;
+}
+
+.qk-pill.is-running {
+  border-color: transparent;
+  color: var(--text);
+  background: transparent;
+}
+
+.qk-pill.is-running::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: conic-gradient(
+    #1c6b5a 0deg,
+    #1c6b5a var(--ring-progress),
+    #d64a3a var(--ring-progress),
+    #d64a3a 360deg
+  );
+  z-index: 0;
+  animation: ringFill 2.6s linear infinite;
+}
+
+.qk-pill.is-running::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: #fff;
+  z-index: 1;
+}
+
+.qk-pill-label {
+  position: relative;
+  z-index: 2;
+}
+
+@property --ring-progress {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes ringFill {
+  to {
+    --ring-progress: 360deg;
+  }
+}
+
+.qk-prose {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.qk-prose h1,
+.qk-prose h2,
+.qk-prose h3,
+.qk-prose h4,
+.qk-prose h5,
+.qk-prose h6 {
+  margin: 12px 0 6px;
+  font-family: "Spectral", serif;
+  line-height: 1.3;
+}
+
+.qk-prose p {
+  margin: 6px 0;
+}
+
+.qk-prose ul,
+.qk-prose ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.qk-prose li {
+  margin-bottom: 4px;
+}
+
+.qk-prose pre {
+  background: #fbf7f0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  overflow: auto;
+  margin: 8px 0;
+}
+
+.qk-prose code {
+  font-family: "Space Grotesk", monospace;
+  background: rgba(31, 28, 23, 0.08);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.qk-prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
