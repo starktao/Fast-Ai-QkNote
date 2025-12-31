@@ -147,6 +147,22 @@ def list_session_steps(session_id: int) -> list[dict]:
         return [dict(row) for row in rows]
 
 
+def find_latest_downloaded_session(url: str) -> int | None:
+    with _get_conn() as conn:
+        row = conn.execute(
+            """
+            SELECT s.id
+            FROM sessions s
+            JOIN session_steps st ON st.session_id = s.id
+            WHERE s.url = ? AND st.step = 'download' AND st.status = 'completed'
+            ORDER BY s.id DESC
+            LIMIT 1
+            """,
+            (url,),
+        ).fetchone()
+        return int(row["id"]) if row else None
+
+
 def update_session(session_id: int, **fields: str | None) -> None:
     if not fields:
         return

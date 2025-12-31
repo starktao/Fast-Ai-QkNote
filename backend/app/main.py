@@ -35,6 +35,7 @@ class SessionIn(BaseModel):
     url: str
     style: str | None = None
     remark: str | None = None
+    include_joke: bool = True
 
 
 @app.on_event("startup")
@@ -79,7 +80,7 @@ def create_session(payload: SessionIn, background_tasks: BackgroundTasks) -> dic
         raise HTTPException(status_code=400, detail="missing api key")
 
     session_id = db.create_session(payload.url, payload.style, payload.remark)
-    background_tasks.add_task(process_session, session_id)
+    background_tasks.add_task(process_session, session_id, payload.include_joke)
     return {"id": session_id}
 
 

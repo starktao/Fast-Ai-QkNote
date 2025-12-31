@@ -107,6 +107,16 @@
                 {{ t("remark") }}
                 <textarea v-model="remark" :placeholder="t('remarkPlaceholder')"></textarea>
               </label>
+              <div class="toggle-row">
+                <label class="switch">
+                  <input id="include-joke" type="checkbox" v-model="includeJoke" />
+                  <span class="switch-track" aria-hidden="true"></span>
+                </label>
+                <label class="toggle-text" for="include-joke">
+                  <span class="toggle-title">{{ t("jokeToggle") }}</span>
+                  <span class="toggle-hint">{{ t("jokeHint") }}</span>
+                </label>
+              </div>
             </div>
             <button :disabled="creating" @click="handleCreate">
               {{ creating ? t("starting") : t("generate") }}
@@ -265,7 +275,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 
@@ -305,6 +315,8 @@ const translations = {
     bilibiliUrl: "Bilibili URL",
     bilibiliPlaceholder: "https://www.bilibili.com/video/...",
     style: "Style",
+    jokeToggle: "Tell a joke",
+    jokeHint: "A short joke at the end to aid understanding.",
     remark: "Remark",
     remarkPlaceholder: "Optional notes for the model",
     starting: "Starting...",
@@ -357,6 +369,8 @@ const translations = {
     bilibiliUrl: "Bilibili 链接",
     bilibiliPlaceholder: "https://www.bilibili.com/video/...",
     style: "风格",
+    jokeToggle: "讲个笑话",
+    jokeHint: "笔记末尾一个便于理解的笑话",
     remark: "备注",
     remarkPlaceholder: "给模型的可选说明",
     starting: "创建中...",
@@ -413,8 +427,9 @@ const configStatusText = computed(() =>
 );
 
 const videoUrl = ref("");
-const style = ref("general");
+const style = ref("video_faithful");
 const remark = ref("");
+const includeJoke = ref(true);
 const creating = ref(false);
 
 const generateStatusKey = ref("ready");
@@ -437,13 +452,13 @@ let detailStream = null;
 let langPulseTimer = null;
 let stylePulseTimer = null;
 let copyTimer = null;
+const INCLUDE_JOKE_KEY = "qknote.includeJoke";
 
 const styles = [
-  { value: "general", label: { en: "General", zh: "通用" } },
-  { value: "lecture", label: { en: "Lecture", zh: "讲座" } },
-  { value: "meeting", label: { en: "Meeting", zh: "会议" } },
-  { value: "checklist", label: { en: "Checklist", zh: "清单" } },
-  { value: "mindmap", label: { en: "Mindmap", zh: "思维导图" } },
+  { value: "video_faithful", label: { en: "Video faithful", zh: "贴近视频" } },
+  { value: "understand_memory", label: { en: "Understand & remember", zh: "理解记忆" } },
+  { value: "concise", label: { en: "Concise", zh: "简明扼要" } },
+  { value: "moments", label: { en: "Moments", zh: "朋友圈风格" } },
 ];
 
 const currentLanguageLabel = computed(() => {
@@ -832,6 +847,7 @@ async function handleCreate() {
       url: videoUrl.value,
       style: style.value,
       remark: remark.value,
+      include_joke: includeJoke.value,
     });
     setGenerateStatusKey("sessionCreated", { id: result.id });
     videoUrl.value = "";
@@ -871,6 +887,12 @@ async function selectSession(id, scroll = true) {
 
 onMounted(async () => {
   try {
+    const storedJoke = localStorage.getItem(INCLUDE_JOKE_KEY);
+    if (storedJoke !== null) {
+      includeJoke.value = storedJoke === "true";
+    }
+  } catch {}
+  try {
     await loadInitial();
   } catch (error) {
     setConfigStatusRaw(String(error.message || error));
@@ -878,6 +900,12 @@ onMounted(async () => {
   startSessionsStream();
   document.addEventListener("click", handleDocumentClick);
   document.addEventListener("keydown", handleDocumentKeydown);
+});
+
+watch(includeJoke, (value) => {
+  try {
+    localStorage.setItem(INCLUDE_JOKE_KEY, value ? "true" : "false");
+  } catch {}
 });
 
 onUnmounted(() => {
