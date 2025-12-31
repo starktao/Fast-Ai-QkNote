@@ -1,15 +1,9 @@
 # Qianwen Bilibili Notes
 
-## One-time setup (Windows PowerShell)
-
-```powershell
-./scripts/setup.ps1
-```
-
-Or double-click:
+## One-time setup (Windows)
 
 ```text
-scripts/setup.cmd
+scripts\setup.cmd
 ```
 
 This script:
@@ -20,26 +14,14 @@ This script:
 
 ## Start the app
 
-```powershell
-./scripts/start.ps1
-```
-
-Or double-click:
-
 ```text
-scripts/start.cmd
+scripts\start.cmd
 ```
 
 ## First run (setup + start)
 
-```powershell
-./scripts/first-run.ps1
-```
-
-Or double-click:
-
 ```text
-scripts/first-run.cmd
+scripts\first-run.cmd
 ```
 
 ## Notes

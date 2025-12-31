@@ -444,6 +444,60 @@ button:not(:disabled):active {
   box-shadow: none;
 }
 
+.print-area {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #fff;
+    overflow: visible;
+  }
+
+  #app {
+    padding: 0;
+    max-width: none;
+  }
+
+  .app,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  .print-area {
+    display: block;
+    padding: 24px;
+    color: #000;
+  }
+
+  .print-title {
+    font-family: "Spectral", serif;
+    font-size: 22px;
+    margin: 0 0 8px;
+  }
+
+  .print-link {
+    font-size: 12px;
+    margin-bottom: 16px;
+    word-break: break-all;
+  }
+
+  .print-label {
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .print-body {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .print-area a {
+    color: #000;
+    text-decoration: none;
+  }
+}
+
 .status {
   font-size: 13px;
   color: var(--muted);
@@ -593,6 +647,12 @@ button:not(:disabled):active {
   gap: 12px;
   margin-bottom: 12px;
   flex-wrap: wrap;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .step-list {

@@ -51,13 +51,13 @@
               <span class="status">{{ configStatusText }}</span>
             </div>
             <div class="grid">
-              <label>
+              <label v-if="showApiKeyInput">
                 {{ t("apiKey") }}
                 <input v-model="apiKey" type="password" :placeholder="t('apiKeyPlaceholder')" />
               </label>
             </div>
             <button :disabled="saving" @click="handleSave">
-              {{ saving ? t("validating") : t("validateSave") }}
+              {{ saving ? t("validating") : apiKeyButtonLabel }}
             </button>
             <div class="status" v-if="configMask">{{ t("savedKey") }} {{ configMask }}</div>
           </div>
@@ -151,14 +151,19 @@
                     <span class="step-label">{{ formatStage(step.step) }}</span>
                   </div>
                 </div>
-                <button
-                  class="ghost-btn"
-                  :class="{ 'is-copied': copyState === 'copied' }"
-                  :disabled="!selected.session.note"
-                  @click="copyNote"
-                >
-                  {{ copyButtonLabel }}
-                </button>
+                <div class="detail-actions">
+                  <button
+                    class="ghost-btn"
+                    :class="{ 'is-copied': copyState === 'copied' }"
+                    :disabled="!selected.session.note"
+                    @click="copyNote"
+                  >
+                    {{ copyButtonLabel }}
+                  </button>
+                  <button class="ghost-btn" :disabled="!selected.session.note" @click="exportPdf">
+                    {{ t("exportPdf") }}
+                  </button>
+                </div>
               </div>
               <div class="note-block error" v-if="selected.session.error">
                 {{ t("error") }}: {{ selected.session.error }}
@@ -253,6 +258,14 @@
       </aside>
     </div>
   </div>
+  <div v-if="selected" class="print-area">
+    <h1 class="print-title">{{ printTitle }}</h1>
+    <div class="print-link" v-if="printLink">
+      <span class="print-label">{{ t("sourceLink") }}</span>
+      <a :href="printLink" target="_blank" rel="noopener">{{ printLink }}</a>
+    </div>
+    <div class="print-body" v-html="renderMarkdown(selected.session.note || t('noNote'))"></div>
+  </div>
   <Transition name="fade-slide">
     <div v-if="confirmOpen" class="modal-backdrop">
       <div class="modal-card">
@@ -310,6 +323,7 @@ const translations = {
     apiKeyPlaceholder: "Enter DashScope API key",
     validating: "Validating...",
     validateSave: "Validate & Save",
+    editApiKey: "Edit API Key",
     savedKey: "Saved key:",
     generateNotes: "Generate Notes",
     bilibiliUrl: "Bilibili URL",
@@ -342,6 +356,7 @@ const translations = {
     noNote: "No note yet.",
     sourceLink: "Source link:",
     copyNote: "Copy Note",
+    exportPdf: "Export PDF",
     copied: "Copied",
     copyFailed: "Copy Failed",
     focus: "Focus",
@@ -396,6 +411,7 @@ const translations = {
     noNote: "暂无笔记内容。",
     sourceLink: "原链接（点击跳转）：",
     copyNote: "复制笔记",
+    exportPdf: "导出 PDF",
     copied: "已复制",
     copyFailed: "复制失败",
     focus: "专注",
@@ -404,6 +420,7 @@ const translations = {
     configNotSet: "未配置 API",
     configValidating: "校验密钥中...",
     configSaved: "已保存",
+    editApiKey: "修改apikey",
     sessionStarting: "正在创建会话...",
     sessionCreated: "会话 #{id} 已创建。",
     ready: "就绪",
@@ -418,6 +435,7 @@ function t(key, params = {}) {
 const apiKey = ref("");
 const configMask = ref("");
 const saving = ref(false);
+const editingApiKey = ref(false);
 
 const configStatusKey = ref("configNotSet");
 const configStatusParams = ref({});
@@ -425,6 +443,15 @@ const configStatusRaw = ref("");
 const configStatusText = computed(() =>
   configStatusKey.value ? t(configStatusKey.value, configStatusParams.value) : configStatusRaw.value,
 );
+
+const showApiKeyInput = computed(() => !configMask.value || editingApiKey.value);
+
+const apiKeyButtonLabel = computed(() => {
+  if (!configMask.value || editingApiKey.value) {
+    return t("validateSave");
+  }
+  return t("editApiKey");
+});
 
 const videoUrl = ref("");
 const style = ref("video_faithful");
@@ -478,6 +505,15 @@ const copyButtonLabel = computed(() => {
     return t("copyFailed");
   }
   return t("copyNote");
+});
+
+const printTitle = computed(() => {
+  const session = selected.value?.session;
+  return session?.title || session?.url || "QkNote";
+});
+
+const printLink = computed(() => {
+  return selected.value?.session?.url || "";
 });
 
 const filteredSessions = computed(() => {
@@ -732,6 +768,23 @@ async function copyNote() {
   }
 }
 
+function exportPdf() {
+  const session = selected.value?.session;
+  if (!session?.note) {
+    return;
+  }
+  const originalTitle = document.title;
+  const nextTitle = session.title || session.url || "QkNote";
+  const restoreTitle = () => {
+    document.title = originalTitle;
+    window.removeEventListener("afterprint", restoreTitle);
+  };
+  window.addEventListener("afterprint", restoreTitle, { once: true });
+  document.title = nextTitle;
+  window.print();
+  setTimeout(restoreTitle, 1000);
+}
+
 function stepStatusClass(status) {
   return {
     "is-pending": status === "pending",
@@ -819,9 +872,14 @@ async function loadInitial() {
   configMask.value = config.api_key_masked || "";
   setConfigStatusKey(config.has_key ? "configConfigured" : "configNotSet");
   setGenerateStatusKey("ready");
+  editingApiKey.value = false;
 }
 
 async function handleSave() {
+  if (configMask.value && !editingApiKey.value) {
+    editingApiKey.value = true;
+    return;
+  }
   saving.value = true;
   setConfigStatusKey("configValidating");
   try {
@@ -832,6 +890,7 @@ async function handleSave() {
     const config = await getConfig();
     configMask.value = config.api_key_masked || "";
     setConfigStatusKey(config.has_key ? "configConfigured" : "configNotSet");
+    editingApiKey.value = false;
   } catch (error) {
     setConfigStatusRaw(String(error.message || error));
   } finally {
