@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./frontend/public/mynote-icon.png" alt="QkNote Icon" width="120" height="120">
+  <img src="./frontend/public/mynote-icon.png" alt="Fast-Ai-QkNote Icon" width="120" height="120">
 </p>
 
-<h1 align="center">Fast AI Note (QkNote)</h1>
+<h1 align="center">Fast-Ai-QkNote</h1>
 
 <p align="center">
   <em>只需配置阿里千问 API，即可快速生成 Bilibili 视频笔记</em>
@@ -16,7 +16,7 @@
 
 ## 项目简介
 
-Fast AI Note 是一个聚焦“快速生成笔记”的视频笔记工具。输入 Bilibili 链接，系统会自动下载音频，并通过阿里千问完成转写与笔记生成。无需本地转写模型，无需复杂配置。
+Fast-Ai-QkNote 是一个聚焦“快速生成笔记”的视频笔记工具。输入 Bilibili 链接，系统会自动下载音频，并通过阿里千问完成转写与笔记生成。无需本地转写模型，无需复杂配置。
 
 ## 核心亮点
 

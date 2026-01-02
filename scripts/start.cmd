@@ -24,10 +24,10 @@ if "%NEED_SETUP%"=="1" (
 )
 
 echo Starting backend...
-start "QkNote Backend" cmd /k "cd /d ""%BACKEND_DIR%"" && call .venv\Scripts\activate.bat && uvicorn app.main:app --reload"
+start "Fast-Ai-QkNote Backend" cmd /k "cd /d ""%BACKEND_DIR%"" && call .venv\Scripts\activate.bat && uvicorn app.main:app --reload"
 
 echo Starting frontend...
-start "QkNote Frontend" cmd /k "cd /d ""%FRONTEND_DIR%"" && npm run dev"
+start "Fast-Ai-QkNote Frontend" cmd /k "cd /d ""%FRONTEND_DIR%"" && npm run dev"
 
 endlocal
 exit /b 0
