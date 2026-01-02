@@ -85,6 +85,7 @@ Fast AI Note 是一个聚焦“快速生成笔记”的视频笔记工具。输�
 1. 双击运行 `scripts\first-run.cmd`。
 2. 打开浏览器 `http://localhost:5173`。
 3. 在「模型配置」中输入 DashScope API Key，点击“校验并保存”。
+   DashScope API Key 获取地址：https://dashscope.console.aliyun.com/apiKey
 4. 粘贴 Bilibili 链接，选择笔记风格，点击“生成”。
 
 ### 自动启动方式
