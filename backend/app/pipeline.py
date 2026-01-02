@@ -6,13 +6,14 @@ from pathlib import Path
 from yt_dlp import YoutubeDL
 
 from . import db
-from .qwen_client import QwenClient
+from .qwen_client import QwenClient, is_no_valid_fragment_error
 
 AUDIO_DIR = os.path.join(db.DATA_DIR, "audio")
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 LOCAL_FFMPEG = os.path.join(REPO_ROOT, "tools", "ffmpeg", "bin", "ffmpeg.exe")
 SAFE_DATA_URI_BYTES = 7_000_000
 CHUNK_SECONDS = 120
+FALLBACK_AUDIO_MODEL = "qwen-audio-turbo-latest"
 
 
 def process_session(session_id: int, include_joke: bool) -> None:
@@ -150,6 +151,24 @@ def find_cached_audio(url: str) -> tuple[int, Path] | None:
 
 
 def transcribe_with_chunks(
+    client: QwenClient,
+    session_id: int,
+    audio_model: str,
+    audio_path: str,
+    prompt: str,
+) -> str:
+    try:
+        return _transcribe_with_model(client, session_id, audio_model, audio_path, prompt)
+    except Exception as exc:
+        if client.is_filetrans_model(audio_model) and is_no_valid_fragment_error(exc):
+            print(f"[transcribe] filetrans no valid fragment; fallback to {FALLBACK_AUDIO_MODEL}")
+            db.update_step(session_id, "transcribe", "running", f"fallback {FALLBACK_AUDIO_MODEL}")
+            return _transcribe_with_model(client, session_id, FALLBACK_AUDIO_MODEL, audio_path, prompt)
+        print(f"[transcribe] failed: {exc}")
+        raise
+
+
+def _transcribe_with_model(
     client: QwenClient,
     session_id: int,
     audio_model: str,

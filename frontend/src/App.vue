@@ -321,6 +321,7 @@ const translations = {
     apiConfig: "API Configuration",
     apiKey: "API Key",
     apiKeyPlaceholder: "Enter DashScope API key",
+    apiKeyMissing: "API key is required",
     validating: "Validating...",
     validateSave: "Validate & Save",
     editApiKey: "Edit API Key",
@@ -377,6 +378,7 @@ const translations = {
     apiConfig: "模型配置",
     apiKey: "API 密钥",
     apiKeyPlaceholder: "输入 DashScope API Key",
+    apiKeyMissing: "请输入 API Key",
     validating: "校验中...",
     validateSave: "校验并保存",
     savedKey: "已保存密钥：",
@@ -570,6 +572,10 @@ function setConfigStatusRaw(message) {
   configStatusKey.value = "";
   configStatusParams.value = {};
   configStatusRaw.value = message;
+}
+
+function normalizeApiKey(value) {
+  return value.trim().replace(/^Bearer\s+/i, "");
 }
 
 function setGenerateStatusKey(key, params = {}) {
@@ -882,9 +888,15 @@ async function handleSave() {
   }
   saving.value = true;
   setConfigStatusKey("configValidating");
+  const normalizedKey = normalizeApiKey(apiKey.value);
+  if (!normalizedKey) {
+    setConfigStatusRaw(t("apiKeyMissing"));
+    saving.value = false;
+    return;
+  }
   try {
     await saveConfig({
-      api_key: apiKey.value,
+      api_key: normalizedKey,
     });
     apiKey.value = "";
     const config = await getConfig();

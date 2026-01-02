@@ -1,6 +1,8 @@
+import ast
 import asyncio
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -38,6 +40,40 @@ class SessionIn(BaseModel):
     include_joke: bool = True
 
 
+def _normalize_api_key(value: str) -> str:
+    cleaned = value.strip()
+    if cleaned.lower().startswith("bearer "):
+        cleaned = cleaned[7:].strip()
+    return cleaned
+
+
+def _format_dashscope_error(exc: Exception) -> str:
+    message = str(exc)
+    if "Throttling.AllocationQuota" in message:
+        return "quota exceeded"
+    if not message.startswith("DashScope error"):
+        return message or "invalid api key"
+    match = re.match(r"DashScope error \\d+: (.*)", message)
+    if not match:
+        return "invalid api key"
+    raw_detail = match.group(1)
+    detail = None
+    try:
+        detail = ast.literal_eval(raw_detail)
+    except Exception:
+        detail = None
+    if isinstance(detail, dict):
+        code = str(detail.get("code") or "")
+        detail_message = str(detail.get("message") or "")
+        if code in {"InvalidApiKey", "InvalidAuthenticationToken", "InvalidToken", "AuthFailed"}:
+            return "invalid api key"
+        if detail_message:
+            return detail_message
+        if code:
+            return code
+    return "invalid api key"
+
+
 @app.on_event("startup")
 def on_startup() -> None:
     db.init_db()
@@ -59,17 +95,28 @@ def get_config() -> dict:
 
 @app.post("/api/config")
 def save_config(payload: ConfigIn) -> dict:
-    client = QwenClient(payload.api_key)
+    api_key = _normalize_api_key(payload.api_key)
+    if not api_key:
+        raise HTTPException(status_code=400, detail="missing api key")
+    client = QwenClient(api_key)
     try:
+        base_url = os.getenv("DASHSCOPE_BASE_URL") or "default"
+        print(
+            f"[save_config] api_key_len={len(api_key)} text_model={DEFAULT_TEXT_MODEL} "
+            f"audio_model={DEFAULT_AUDIO_MODEL} base_url={base_url}"
+        )
+        print(f"[save_config] validating text model {DEFAULT_TEXT_MODEL}")
         client.validate_text_model(DEFAULT_TEXT_MODEL)
-        client.validate_audio_model(DEFAULT_AUDIO_MODEL)
+        if not client.is_filetrans_model(DEFAULT_AUDIO_MODEL):
+            print(f"[save_config] validating audio model {DEFAULT_AUDIO_MODEL}")
+            client.validate_audio_model(DEFAULT_AUDIO_MODEL)
+        else:
+            print(f"[save_config] skip filetrans audio validation for {DEFAULT_AUDIO_MODEL}")
     except Exception as exc:
-        message = str(exc)
-        if "Throttling.AllocationQuota" in message:
-            raise HTTPException(status_code=400, detail="quota exceeded")
-        raise HTTPException(status_code=400, detail="invalid api key")
+        print(f"[save_config] validation failed: {exc}")
+        raise HTTPException(status_code=400, detail=_format_dashscope_error(exc))
 
-    db.upsert_config(payload.api_key, DEFAULT_AUDIO_MODEL, DEFAULT_TEXT_MODEL)
+    db.upsert_config(api_key, DEFAULT_AUDIO_MODEL, DEFAULT_TEXT_MODEL)
     return {"ok": True}
 
 

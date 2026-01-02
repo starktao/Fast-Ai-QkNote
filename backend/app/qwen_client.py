@@ -7,8 +7,14 @@ import wave
 from typing import Any
 
 import dashscope
-from dashscope import Files
-from dashscope.audio.qwen_asr import QwenTranscription
+try:  # dashscope>=1.15 uses File, older versions expose Files
+    from dashscope import Files as DashscopeFile
+except ImportError:  # pragma: no cover - depends on installed dashscope
+    from dashscope import File as DashscopeFile
+try:  # dashscope newer versions use audio.asr.transcription.Transcription
+    from dashscope.audio.qwen_asr import QwenTranscription as DashscopeTranscription
+except ImportError:  # pragma: no cover - depends on installed dashscope
+    from dashscope.audio.asr.transcription import Transcription as DashscopeTranscription
 import requests
 
 DEFAULT_BASE_URL = "https://dashscope.aliyuncs.com/api/v1"
@@ -72,6 +78,10 @@ class QwenClient:
             temp_path = _write_silence_wav()
             try:
                 _ = self._transcribe_filetrans(model, temp_path)
+            except Exception as exc:
+                if is_no_valid_fragment_error(exc):
+                    return
+                raise
             finally:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
@@ -142,27 +152,39 @@ class QwenClient:
         return _is_filetrans_model(model)
 
     def _transcribe_filetrans(self, model: str, audio_path: str) -> str:
-        upload = Files.upload(file_path=audio_path, purpose="assistants", api_key=self.api_key)
-        file_id = upload["output"]["uploaded_files"][0]["file_id"]
+        upload = DashscopeFile.upload(file_path=audio_path, purpose="assistants", api_key=self.api_key)
+        upload_output = upload.get("output") or {}
+        file_id = _extract_file_id(upload_output)
+        if not file_id:
+            raise RuntimeError(f"file upload missing file_id: {upload_output}")
         try:
-            info = Files.get(file_id, api_key=self.api_key)
-            file_url = info["output"]["url"]
-            response = QwenTranscription.call(model=model, file_url=file_url, api_key=self.api_key)
+            info = DashscopeFile.get(file_id, api_key=self.api_key)
+            info_output = info.get("output") or {}
+            file_url = (
+                _extract_file_url(upload_output)
+                or info_output.get("url")
+                or info_output.get("file_url")
+                or info_output.get("download_url")
+            )
+            if not file_url:
+                raise RuntimeError(f"missing file url for file_id {file_id}")
+            response = _call_transcription(model=model, file_url=file_url, api_key=self.api_key)
             output = response.get("output") or {}
             if output.get("task_status") != "SUCCEEDED":
                 raise RuntimeError(f"filetrans failed: {output}")
             result = output.get("result") or {}
             transcription_url = result.get("transcription_url")
-            if not transcription_url:
-                raise RuntimeError("missing transcription_url")
-            transcription = requests.get(transcription_url, timeout=120).json()
-            text = _extract_filetrans_text(transcription)
+            if transcription_url:
+                transcription = requests.get(transcription_url, timeout=120).json()
+                text = _extract_filetrans_text(transcription)
+            else:
+                text = _extract_filetrans_text(output)
             if not text:
                 raise RuntimeError("empty transcript")
             return text
         finally:
             try:
-                Files.delete(file_id, api_key=self.api_key)
+                DashscopeFile.delete(file_id, api_key=self.api_key)
             except Exception:
                 pass
 
@@ -206,6 +228,35 @@ def _write_silence_wav(duration_seconds: float = 0.5, sample_rate: int = 16000) 
 
 def _is_filetrans_model(model: str) -> bool:
     return "filetrans" in model or model.startswith("qwen3-asr-")
+
+
+def is_no_valid_fragment_error(exc: Exception) -> bool:
+    return "SUCCESS_WITH_NO_VALID_FRAGMENT" in str(exc)
+
+
+def _call_transcription(model: str, file_url: str, api_key: str):
+    try:
+        return DashscopeTranscription.call(model=model, file_url=file_url, api_key=api_key)
+    except TypeError:
+        return DashscopeTranscription.call(model=model, file_urls=[file_url], api_key=api_key)
+
+
+def _extract_file_id(output: dict) -> str | None:
+    uploaded_files = output.get("uploaded_files") or []
+    if uploaded_files and isinstance(uploaded_files, list):
+        entry = uploaded_files[0] if uploaded_files else None
+        if isinstance(entry, dict):
+            return entry.get("file_id") or entry.get("id")
+    return output.get("file_id") or output.get("id")
+
+
+def _extract_file_url(output: dict) -> str | None:
+    uploaded_files = output.get("uploaded_files") or []
+    if uploaded_files and isinstance(uploaded_files, list):
+        entry = uploaded_files[0] if uploaded_files else None
+        if isinstance(entry, dict):
+            return entry.get("url") or entry.get("file_url") or entry.get("download_url")
+    return output.get("url") or output.get("file_url") or output.get("download_url")
 
 
 def _extract_asr_text(response: dict[str, Any]) -> str:
