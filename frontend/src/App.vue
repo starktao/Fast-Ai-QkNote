@@ -2,9 +2,9 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <img class="brand-logo" src="/mynote-icon.png" alt="Fast-Ai-QkNote logo" />
+        <img class="brand-logo" src="/mynote-icon.png" alt="QkNote logo" />
         <div>
-          <h1>Fast-Ai-QkNote</h1>
+          <h1>QkNote</h1>
         </div>
       </div>
       <div class="lang-switch">
@@ -314,7 +314,7 @@ const languageOptions = [
 ];
 const translations = {
   en: {
-    title: "Fast-Ai-QkNote",
+    title: "Qianwen Bilibili Notes",
     subtitle: "Download audio, transcribe with Qwen Audio, and generate notes with Qwen text models.",
     language: "Language",
     controlCenter: "Control Center",
@@ -511,7 +511,7 @@ const copyButtonLabel = computed(() => {
 
 const printTitle = computed(() => {
   const session = selected.value?.session;
-  return session?.title || session?.url || "Fast-Ai-QkNote";
+  return session?.title || session?.url || "QkNote";
 });
 
 const printLink = computed(() => {
@@ -780,7 +780,7 @@ function exportPdf() {
     return;
   }
   const originalTitle = document.title;
-  const nextTitle = session.title || session.url || "Fast-Ai-QkNote";
+  const nextTitle = session.title || session.url || "QkNote";
   const restoreTitle = () => {
     document.title = originalTitle;
     window.removeEventListener("afterprint", restoreTitle);
